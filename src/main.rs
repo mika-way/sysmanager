@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 mod sys_update;
 mod sys_clear;
+mod sys_info;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -25,6 +26,8 @@ enum SysCommands {
     Update(UpdateArgs),
     /// Löscht temporäre Dateien
     Clear(ClearArgs),
+    /// Infos über dein System
+    Info,
 }
 #[derive(Parser)]
 struct UpdateArgs {
@@ -57,6 +60,9 @@ fn main() {
                     }else{
                         sys_clear::clear(false);
                     }
+                }
+                SysCommands::Info => {
+                    sys_info::info();
                 }
             }
         }
