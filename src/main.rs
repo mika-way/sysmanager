@@ -1,8 +1,18 @@
 use clap::{Parser, Subcommand};
+use sys_command::sys_update;
+use sys_command::sys_clear;
+use sys_command::sys_info;
 
-mod sys_update;
-mod sys_clear;
-mod sys_info;
+
+mod sys_command {
+    pub mod sys_update;
+    pub mod sys_clear;
+    pub mod sys_info;
+}
+mod design {
+    pub mod quad;
+}
+
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
