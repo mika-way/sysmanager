@@ -1,10 +1,10 @@
 use crossterm::{cursor, terminal::{size, Clear, ClearType}};
 use std::{io::{stdout, Write}};
 
-pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, real_name: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &f32, total_memory: &f64, used_memory: &f64, free_memory: &f64){
+pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, real_name: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str, disk_count_ssd: &i32, disk_count_hhd: &i32){
 
     let char: String = "§".to_string();
-    let long_text = build_text(user, os, kv, os_v, uptime, distro, real_name, user_name, architektur, cpu_brand, cpu_usage, total_memory, used_memory, free_memory);
+    let long_text = build_text(user, os, kv, os_v, uptime, distro, user_name, architektur, cpu_brand, cpu_usage, total_memory, used_memory, free_memory, gpu_name, gpu_backend, disk_count_ssd, disk_count_hhd);
 
     let (width, height) = match size() {
         Ok(s) => s,
@@ -43,8 +43,9 @@ pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &s
     // --- Phase 3: Text in das Rechteck schreiben und zentrieren ---
 
     let os_text = format!(" {} ", distro);
+    let name_text = format!(" {} ", real_name);
     crossterm::execute!(stdout, cursor::MoveTo(start_x + 1, start_y)).unwrap();
-    write!(stdout, "{}", os_text).unwrap();
+    write!(stdout, "{}|{}", os_text, name_text).unwrap();
     
     // Die einzelnen Zeilen des Textes trennen.
     let lines: Vec<&str> = long_text.lines().collect();
@@ -78,10 +79,9 @@ pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &s
 }
 
 
-fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, real_name: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &f32, total_memory: &f64, used_memory: &f64, free_memory: &f64) -> String {
+fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str, disk_count_ssd: &i32, disk_count_hhd: &i32) -> String {
     let formatted_text = format!(
-        "Hello, {}!\n\n\
-        ---System Information---\n\n\
+        "---System Information---\n\n\
          - Operating System: {} ({})\n\
          - Operating System Version: {}\n\
          - Kernel-Version: {}\n\
@@ -91,9 +91,11 @@ fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: 
          - Username: {}\n\n\
          ---System Usage---\n\n\
          - Memory: {:.2} GiB total / {:.2} GiB used / {:.2} GiB free\n\
-         - CPU: {} ({:.2}%)\n\
+         - CPU: {} ({}%)\n\
+         - GPU: {} ({})\n\
+         - Disk Count : {} (SSD) | {} (HDD)\n\
          - MORE COOMING SOON\n\n",
-        real_name, os, architektur, os_v, kv, distro, uptime, user, user_name, total_memory, used_memory, free_memory, cpu_brand, cpu_usage
+        os, architektur, os_v, kv, distro, uptime, user, user_name, total_memory, used_memory, free_memory, cpu_brand, cpu_usage, gpu_name, gpu_backend, disk_count_ssd, disk_count_hhd
     );
     formatted_text
 }

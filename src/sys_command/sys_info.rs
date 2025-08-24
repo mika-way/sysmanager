@@ -1,4 +1,5 @@
-use sysinfo::{System};
+use sysinfo::{DiskKind, Disks, System};
+use wgpu::{AdapterInfo, PowerPreference, RequestAdapterOptions};
 use whoami::{self};
 
 use crate::design::quad;
@@ -23,21 +24,34 @@ pub fn info() {
     let used_memory = sys.used_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
     let free_memory = sys.available_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
 
-    //Hardware
-
     //CPU
     let cpu_brand = sys.cpus().get(0).unwrap().brand();
-    let cpu = sys.cpus().get(0).unwrap();
-    let cpu_usage = cpu.cpu_usage();
+    let cpu_usage = chip_usage();
 
     //GPU
+    let gpu_name = get_adapter_name(get_adapter());
+    let gpu_backend = get_adapter_backend(get_adapter());
+
+    //Disk
+    let disks = Disks::new_with_refreshed_list();
+    let disk_count_ssd = disks.list()
+        .iter()
+        .filter(|d| matches!(d.kind(), DiskKind::SSD))
+        .map(|d| d.name().to_string_lossy())
+        .count() as i32;
+
+    let disk_count_hhd = disks.list()
+        .iter()
+        .filter(|d| matches!(d.kind(), DiskKind::HDD))
+        .map(|d| d.name().to_string_lossy())
+        .count() as i32;
 
     //whoami
     let distro = format!("{:?}", whoami::distro());
     let real_name = format!("{:?}", whoami::realname());
     let user_name = format!("{:?}", whoami::username());
     let architektur = format!("{:?}", whoami::arch());
-    quad::quad(&user, &os, &kv, &os_v, &uptime, &distro, &real_name, &user_name, &architektur, &cpu_brand, &cpu_usage, &total_memory, &used_memory, &free_memory);
+    quad::quad(&user, &os, &kv, &os_v, &uptime, &distro, &real_name, &user_name, &architektur, &cpu_brand, &cpu_usage, &total_memory, &used_memory, &free_memory, &gpu_name, &gpu_backend, &disk_count_ssd, &disk_count_hhd);
 }
 
 fn updtime(total_seconds: u64) -> String {
@@ -47,4 +61,44 @@ fn updtime(total_seconds: u64) -> String {
     let seconds = remaining_seconds % 60;
 
     return format!("{}h {}m {}s", hours, minutes, seconds);
+}
+
+fn get_adapter() -> AdapterInfo{
+    let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::default());
+
+    let adapter = pollster::block_on(instance.request_adapter(&RequestAdapterOptions {
+        power_preference: PowerPreference::HighPerformance,
+        compatible_surface: None,
+        force_fallback_adapter: false,
+    }))
+    .expect("Konnte keinen Adapter finden.");
+
+    let info = adapter.get_info();
+
+    return info;
+}
+
+fn get_adapter_name(info: AdapterInfo) -> String{
+    let result = format!("{:?}", info.name);
+    return result;
+}
+
+fn get_adapter_backend(info: AdapterInfo) -> String{
+    let result = format!("{:?}", info.backend);
+    return result;
+}
+
+fn chip_usage() -> String{
+    let mut sys = System::new_all();
+    sys.refresh_all();
+
+    std::thread::sleep(std::time::Duration::from_millis(500)); 
+    sys.refresh_cpu_all();
+
+    // Gesamte CPU-Auslastung
+    let total_cpu_usage = sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
+
+    let result = format!("{:.2}", total_cpu_usage) as String;
+
+    return result;
 }
