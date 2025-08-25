@@ -6,7 +6,7 @@ Ein System-Manager, der die Verwaltung deines Linux-Systems vereinfacht und Zeit
 
 Die aktuellen Hauptfunktionen sind:
 
-Update: Unterstützt momentan nur pacman. Zukünftig sollen weitere Paketmanager hinzugefügt werden.
+Update: Diese Funktion ermöglicht es dir, deine Systeme zentral zu aktualisieren, egal wie viele Paketmanager du nutzt.
 
 Clear: Löscht den temporären Ordner /tmp, um Speicherplatz freizugeben.
 
