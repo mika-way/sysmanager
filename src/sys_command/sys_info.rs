@@ -1,4 +1,4 @@
-use sysinfo::{DiskKind, Disks, System};
+use sysinfo::{System, Disks};
 use wgpu::{AdapterInfo, PowerPreference, RequestAdapterOptions};
 use whoami::{self};
 
@@ -33,26 +33,34 @@ pub fn info() {
     let gpu_backend = get_adapter_backend(get_adapter());
 
     //Disk
+    /* 
     let disks = Disks::new_with_refreshed_list();
     let disk_count_ssd = disks.list()
         .iter()
         .filter(|d| matches!(d.kind(), DiskKind::SSD))
         .map(|d| d.name().to_string_lossy())
         .count() as i32;
+    */
 
+    /* 
     let disk_count_hhd = disks.list()
         .iter()
         .filter(|d| matches!(d.kind(), DiskKind::HDD))
         .map(|d| d.name().to_string_lossy())
         .count() as i32;
+    */
+
+
 
     //whoami
     let distro = format!("{:?}", whoami::distro());
     let real_name = format!("{:?}", whoami::realname());
     let user_name = format!("{:?}", whoami::username());
     let architektur = format!("{:?}", whoami::arch());
-    quad::quad(&user, &os, &kv, &os_v, &uptime, &distro, &real_name, &user_name, &architektur, &cpu_brand, &cpu_usage, &total_memory, &used_memory, &free_memory, &gpu_name, &gpu_backend, &disk_count_ssd, &disk_count_hhd);
+    quad::quad(&user, &os, &kv, &os_v, &uptime, &distro, &real_name, &user_name, &architektur, &cpu_brand, &cpu_usage, &total_memory, &used_memory, &free_memory, &gpu_name, &gpu_backend);
 }
+
+//Unterfunktionen
 
 fn updtime(total_seconds: u64) -> String {
     let hours = total_seconds / 3600;
@@ -101,4 +109,24 @@ fn chip_usage() -> String{
     let result = format!("{:.2}", total_cpu_usage) as String;
 
     return result;
+}
+
+pub fn disk_vec() -> Vec<(String, String, u64, u64)> {
+    let mut disks_vec: Vec<(String, String, u64, u64)> = Vec::new();
+    let disk_list = Disks::new_with_refreshed_list();
+    for disk in &disk_list {
+        let mount_point = disk.mount_point();
+        // Hier prüfen, welche Disks du hinzufügen möchtest
+        if mount_point == std::path::Path::new("/") || mount_point.to_string_lossy().starts_with("/mnt/") {
+            let total_space = disk.total_space();
+            let free_space = disk.available_space();
+            disks_vec.push((
+                disk.kind().to_string(),
+                mount_point.to_string_lossy().to_string(),
+                total_space,
+                free_space
+            ));
+        }
+    }
+    disks_vec
 }

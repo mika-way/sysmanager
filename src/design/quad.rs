@@ -1,10 +1,12 @@
 use crossterm::{cursor, terminal::{size, Clear, ClearType}};
 use std::{io::{stdout, Write}};
+use crate::sys_info::disk_vec;
 
-pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, real_name: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str, disk_count_ssd: &i32, disk_count_hhd: &i32){
+
+pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, real_name: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str){
 
     let char: String = "§".to_string();
-    let long_text = build_text(user, os, kv, os_v, uptime, distro, user_name, architektur, cpu_brand, cpu_usage, total_memory, used_memory, free_memory, gpu_name, gpu_backend, disk_count_ssd, disk_count_hhd);
+    let long_text = build_text(user, os, kv, os_v, uptime, distro, user_name, architektur, cpu_brand, cpu_usage, total_memory, used_memory, free_memory, gpu_name, gpu_backend);
 
     let (width, height) = match size() {
         Ok(s) => s,
@@ -79,8 +81,10 @@ pub fn quad(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &s
 }
 
 
-fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str, disk_count_ssd: &i32, disk_count_hhd: &i32) -> String {
-    let formatted_text = format!(
+fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: &str, user_name: &str, architektur: &str, cpu_brand: &str, cpu_usage: &str, total_memory: &f64, used_memory: &f64, free_memory: &f64, gpu_name: &str, gpu_backend: &str) -> String {
+    let disks_vec = disk_vec();
+
+    let mut formatted_text = format!(
         "---System Information---\n\n\
          - Operating System: {} ({})\n\
          - Operating System Version: {}\n\
@@ -92,10 +96,21 @@ fn build_text(user: &str, os: &str, kv: &str, os_v: &str, uptime: &str, distro: 
          ---System Usage---\n\n\
          - Memory: {:.2} GiB total / {:.2} GiB used / {:.2} GiB free\n\
          - CPU: {} ({}%)\n\
-         - GPU: {} ({})\n\
-         - Disk Count : {} (SSD) | {} (HDD)\n\
-         - MORE COOMING SOON\n\n",
-        os, architektur, os_v, kv, distro, uptime, user, user_name, total_memory, used_memory, free_memory, cpu_brand, cpu_usage, gpu_name, gpu_backend, disk_count_ssd, disk_count_hhd
+         - GPU: {} ({})\n\n\
+         ---Disk Information---\n\n",
+        os, architektur, os_v, kv, distro, uptime, user, user_name, total_memory, used_memory, free_memory, cpu_brand, cpu_usage, gpu_name, gpu_backend
     );
+
+    for disk in &disks_vec {
+        let total_gib = disk.2 as f64 / 1024.0 / 1024.0 / 1024.0;
+        let free_gib = disk.3 as f64 / 1024.0 / 1024.0 / 1024.0;
+        
+        formatted_text.push_str(&format!(
+            "- Disk: {} ({}) / Total: {:.2} GiB / Free: {:.2} GiB\n",
+            disk.0, disk.1, total_gib, free_gib
+        ));
+    }
+    
+    formatted_text.push_str("\n---MORE COOMING SOON---\n\n");
     formatted_text
 }
