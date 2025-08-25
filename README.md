@@ -10,6 +10,8 @@ Update: Unterstützt momentan nur pacman. Zukünftig sollen weitere Paketmanager
 
 Clear: Löscht den temporären Ordner /tmp, um Speicherplatz freizugeben.
 
+Info: Zeigt dir alle Infos über dein System an.
+
 --nonconfirm: Überspringt die Bestätigungsabfrage für Befehle.
 
 =Installation=
